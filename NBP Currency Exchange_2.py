@@ -2,47 +2,53 @@ import pandas as pd
 
 import requests
 
-api_base_address = 'https://api.nbp.pl/api/exchangerates/rates/a/'
+def nbp_request(currency):
+    api_base_address = 'https://api.nbp.pl/api/exchangerates/rates/a/'
+    
+    response_format = "json"
+    
+    api_request = api_base_address + currency + "/?format=" + response_format
+    
+    response = requests.get(api_request)
+    
 
-currency = input('What currency do you want to exchange the money to?')
-uppercase_currency = currency.upper()
+    response_json = response.json()
 
-# file_path = r"C:\Users\sylwi\Downloads\Book.xlsx"
-# df = pd.read_excel(file_path)
+ 
+    response_df = pd.DataFrame(response_json)
 
+    response_rate_series = response_df.loc[:,"rates"] 
 
-# currency_code = df.loc[:,"Currency Code"]
-
-# print(currency_code)
+    response_rate_dict = response_rate_series[0]
 
 
-# if uppercase_currency not in currency_code:
-#  print("Please provide correct Currency Code e.g. 'USD'")
+    rate = float(response_rate_dict["mid"])
+    return rate
 
-response_format = "json"
+def calculate_exchange (rate, amount):
+    return amount / rate
+    
+def main():
+    currency = input('What currency do you want to exchange the money to? ').upper()
+    file_path = r"C:\Users\sylwi\Downloads\Currency_code.xlsx"
+    df = pd.read_excel(file_path)
 
-api_request = api_base_address + currency + "/?format=" + response_format
 
-# Making our request
-
-response = requests.get(api_request)
-
-response_json = response.json()
-
-response_df = pd.DataFrame(response_json)
-
-# get a rates element from data frame that is a dictionary with 3 keys: no, effectiveDate and mid (actual rate), it is of type series
-
-response_rate_series = response_df.loc[:, "rates"]  # "Selects all rows from the column named "rates"
-
-# assign element to dictionary that we can easily work
-
-response_rate_dict = response_rate_series[0]
-
-rate = float(response_rate_dict["mid"])
-
-print(f"PLN to {uppercase_currency} rate is: {rate} PLN")
-
-exchange = float(input("How much money do you want to exchange?"))
-
-print(f"If you exchange {exchange} PLN, you will get {exchange / rate:.4f} {uppercase_currency}")
+    currency_code = df.loc[:,"Currency Code"]
+    
+    if currency not in currency_code:
+         print("Please provide correct Currency Code e.g. 'USD'")
+    rate = nbp_request(currency)
+    amount = float(input('How much PLN do you want to exchange? '))
+    
+    
+    if rate:
+            
+            print(f"PLN to {currency} rate is: {rate:.4f} PLN")
+            
+            
+            exchanged_amount = calculate_exchange(rate, amount)
+            print(f"If you exchange {amount} PLN, you will get {exchanged_amount:.4f} {currency}")
+    
+if __name__ == "__main__":
+    main()
