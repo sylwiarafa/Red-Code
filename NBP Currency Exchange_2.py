@@ -10,7 +10,6 @@ def nbp_request(currency):
     api_request = api_base_address + currency + "/?format=" + response_format
     
     response = requests.get(api_request)
-    
 
     response_json = response.json()
 
@@ -21,31 +20,33 @@ def nbp_request(currency):
 
     response_rate_dict = response_rate_series[0]
 
-
     rate = float(response_rate_dict["mid"])
+   
     return rate
+
+
 
 def calculate_exchange (rate, amount):
     return amount / rate
-    
+
+
+
 def main():
     currency = input('What currency do you want to exchange the money to? ').upper()
     file_path = r"C:\Users\sylwi\Downloads\Currency_code.xlsx"
     df = pd.read_excel(file_path)
-
-
     currency_code = df.loc[:,"Currency Code"]
     
     if currency not in currency_code:
-         print("Please provide correct Currency Code e.g. 'USD'")
+       print("Please provide correct Currency Code e.g. 'USD'")
+    
     rate = nbp_request(currency)
     amount = float(input('How much PLN do you want to exchange? '))
     
     
-    if rate:
+    if rate: #czy ja potrzeebuje to "if rate" w tym miejscu? usunęłam je i kod też działa
             
             print(f"PLN to {currency} rate is: {rate:.4f} PLN")
-            
             
             exchanged_amount = calculate_exchange(rate, amount)
             print(f"If you exchange {amount} PLN, you will get {exchanged_amount:.4f} {currency}")
