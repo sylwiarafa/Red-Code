@@ -1,0 +1,21 @@
+import pandas as pd
+
+import requests
+
+
+def gold_rate():
+    
+    api_base_address = 'https://api.nbp.pl/api/cenyzlota/'
+      
+    response = requests.get(api_request)
+
+    response_json = response.json()
+    
+    
+    rate_df = pd.DataFrame(response_json)
+    response_rate = rate_df.loc[:,"cena"]
+    cena_rate = response_rate[0]
+    print(f"Gold rate (cena): {cena_rate}PLN") 
+
+    
+gold_rate()
