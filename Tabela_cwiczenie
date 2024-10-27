@@ -1,0 +1,19 @@
+import pandas as pd
+
+import requests
+
+def get_table():
+    api_base_address = 'https://api.nbp.pl/api/exchangerates/tables/a/'
+      
+    response = requests.get(api_base_address)
+
+    response_json = response.json()
+    
+    
+    rate_df = pd.DataFrame(response_json)
+    response_table = rate_df.loc[:,"rates"]
+    table_rate = response_table[0]
+    print(rate_df)
+    rate_df.to_excel("exchange_rates.xlsx", index=False)
+    print("Data saved to exchange_rates.xlsx")
+get_table()
