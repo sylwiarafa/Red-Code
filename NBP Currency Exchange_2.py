@@ -2,6 +2,7 @@ import pandas as pd
 
 import requests
 
+
 def nbp_request(currency):
     api_base_address = 'https://api.nbp.pl/api/exchangerates/rates/a/'
     
@@ -39,12 +40,12 @@ def main():
     
     if currency not in currency_code:
        print("Please provide correct Currency Code e.g. 'USD'")
+    else:
+        rate = nbp_request(currency)
+        amount = float(input('How much PLN do you want to exchange? '))
     
-    rate = nbp_request(currency)
-    amount = float(input('How much PLN do you want to exchange? '))
     
-    
-    if rate: #czy ja potrzeebuje to "if rate" w tym miejscu? usunęłam je i kod też działa
+    if rate: 
             
             print(f"PLN to {currency} rate is: {rate:.4f} PLN")
             
