@@ -15,7 +15,7 @@ def get_table():
     print("Data saved to exchange_rates.xlsx")
 get_table()
 
-#Ćwiczenie - sprawdzanie, które z walut znajduą sie w tabelce kursu walut NBP
+#Ćwiczenie 
 
 file_path = r"C:\Users\sylwi\Downloads\Currency_code.xlsx"
 df1 = pd.read_excel(file_path)
