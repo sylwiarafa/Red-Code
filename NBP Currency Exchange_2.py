@@ -38,7 +38,7 @@ def main():
     df = pd.read_excel(file_path)
     currency_code = df.loc[:,"Currency Code"]
     
-    if currency not in currency_code:
+    if currency not in currency_code.values:
        print("Please provide correct Currency Code e.g. 'USD'")
     else:
         rate = nbp_request(currency)
