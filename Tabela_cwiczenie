@@ -8,12 +8,32 @@ def get_table():
     response = requests.get(api_base_address)
 
     response_json = response.json()
-    
-    
-    rate_df = pd.DataFrame(response_json)
-    response_table = rate_df.loc[:,"rates"]
-    table_rate = response_table[0]
+
+    rate_df =  pd.json_normalize(response_json, "rates")
     print(rate_df)
     rate_df.to_excel("exchange_rates.xlsx", index=False)
     print("Data saved to exchange_rates.xlsx")
 get_table()
+
+#Ćwiczenie - sprawdzanie, które z walut znajduą sie w tabelce kursu walut NBP
+
+file_path = r"C:\Users\sylwi\Downloads\Currency_code.xlsx"
+df1 = pd.read_excel(file_path)
+
+print(df1)
+
+file_path = r"C:\Users\sylwi\exchange_rates1.xlsx"
+df2 = pd.read_excel(file_path)
+
+print(df2) 
+
+is_in_df2 = df1['Currency Code'].isin(df2['code'])
+print(is_in_df2)
+
+matching_values = df1[df1['Currency Code'].isin(df2['code'])]
+print(matching_values)
+
+#shape[0]: The first element represents the number of rows in the DataFrame. shape[1]: The second element represents the number of columns in the DataFrame.
+
+num_rows = matching_values.shape[0]
+print(f"Out of 161 currencies, NBP provides exchange of PLN to {num_rows} other currencies.")
