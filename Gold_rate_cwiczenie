@@ -19,3 +19,40 @@ def gold_rate():
 
     
 gold_rate()
+
+
+
+import pandas as pd
+
+import requests
+
+from tkinter import*
+
+def gold_rate():
+    
+    api_base_address = 'https://api.nbp.pl/api/cenyzlota/'
+      
+    response = requests.get(api_base_address)
+
+    response_json = response.json()
+    
+    
+    rate_df = pd.DataFrame(response_json)
+    response_rate = rate_df.loc[:,"cena"]
+    cena_rate = response_rate[0]
+    cena_rate_label.config(text=f"Gold Rate: {cena_rate} PLN")
+
+
+root = Tk()
+root.title("Price of gold")
+root.geometry("200x85")
+app = Frame(root)
+app.grid()
+
+Button(root,
+       text = "Click for the price of Gold",
+       command = gold_rate
+      ).grid(row=7, column = 0, columnspan = 4)
+cena_rate_label = Label(root, text="")
+cena_rate_label.grid(row=1, column=0, columnspan=4)
+root.mainloop()
