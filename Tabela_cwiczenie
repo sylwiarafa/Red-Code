@@ -33,7 +33,48 @@ print(is_in_df2)
 matching_values = df1[df1['Currency Code'].isin(df2['code'])]
 print(matching_values)
 
-#shape[0]: The first element represents the number of rows in the DataFrame. shape[1]: The second element represents the number of columns in the DataFrame.
 
-num_rows = matching_values.shape[0]
-print(f"Out of 161 currencies, NBP provides exchange of PLN to {num_rows} other currencies.")
+
+#Tabela GUI
+import pandas as pd
+import requests
+import tkinter as tk
+from tkinter import ttk
+
+def get_table():
+    api_base_address = 'https://api.nbp.pl/api/exchangerates/tables/a/'
+      
+    response = requests.get(api_base_address)
+
+    response_json = response.json()
+    
+    
+    rate_df =  pd.json_normalize(response_json, "rates")
+    rate_df["Buy"] = rate_df["mid"]*0.99
+    rate_df["Sell"] = rate_df["mid"]*1.01
+    return rate_df
+
+def display_rates():
+    root = tk.Tk()
+    root.title("Currency Exchange")
+    root.geometry("1000x800")
+
+    rate_df = get_table()
+    
+    tree = ttk.Treeview(root, columns = ("code" , "mid", "Buy", "Sell"), show='headings')
+    tree.heading("code", text="Currency Code")
+    tree.heading("mid", text="Rate")
+    tree.heading("Buy", text="Buy Rate")
+    tree.heading("Sell", text="Sell Rate")
+    
+    for index, row in rate_df.iterrows():
+        mid_value = f"{row['mid']:.4f}"
+        sell_value = f"{row['Sell']:.4f}"
+        buy_value = f"{row['Buy']:.4f}"
+        
+        tree.insert("", "end", values=(row["code"], mid_value, buy_value, sell_value))
+        tree.pack(fill="both", expand=True)
+        
+    root.mainloop()
+
+display_rates()
