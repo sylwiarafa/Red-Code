@@ -1,4 +1,4 @@
-pip install --upgrade ttkbootstrap
+rrencypip install --upgrade ttkbootstrap
 
 import pandas as pd
 import requests
@@ -168,11 +168,11 @@ class Currency_Exchange(ttk.Frame):
                 "Buy Rate": f"{row['Buy']:.4f}",
                 "Sell Rate": f"{row['Sell']:.4f}",
             }
-            for _, row in rate_df.iterrows() #why_?
+            for _, row in rate_df.iterrows()      #why_ a nie index?
         ]
 
         table = Tableview(
-            master=self, #why self?
+            master=self,            #why self a nie Currency_exchange?
             coldata=columns,
             rowdata=row_data,
             paginated=True,
