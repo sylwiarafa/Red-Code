@@ -8,7 +8,7 @@ from ttkbootstrap.constants import *
 from ttkbootstrap.toast import ToastNotification
 from ttkbootstrap.tableview import Tableview
 
-
+# Getting Currency Code
 def get_code():
     api_base_address = 'https://api.nbp.pl/api/exchangerates/tables/a/'
       
@@ -21,6 +21,43 @@ def get_code():
     df = rate_df["code"]
     return df.tolist()
 
+# Getting rate
+def nbp_request(currency):
+    api_base_address = 'https://api.nbp.pl/api/exchangerates/rates/a/'
+    
+    response_format = "json"
+    
+    api_request = api_base_address + currency + "/?format=" + response_format
+    
+    response = requests.get(api_request)
+
+    response_json = response.json()
+
+ 
+    response_df = pd.DataFrame(response_json)
+
+    response_rate_series = response_df.loc[:,"rates"] 
+
+    response_rate_dict = response_rate_series[0]
+
+    rate = float(response_rate_dict["mid"])
+   
+    return rate
+
+def get_table():
+    api_base_address = 'https://api.nbp.pl/api/exchangerates/tables/a/'
+      
+    response = requests.get(api_base_address)
+
+    response_json = response.json()
+    
+    
+    rate_df =  pd.json_normalize(response_json, "rates")
+    rate_df["Buy"] = rate_df["mid"]*0.99
+    rate_df["Sell"] = rate_df["mid"]*1.01
+    return rate_df
+
+    
 
 class Currency_Exchange(ttk.Frame):
     def __init__(self, master_window):
@@ -63,6 +100,8 @@ class Currency_Exchange(ttk.Frame):
         self.sell_buy_combobox.pack(pady=5)
         self.sell_buy_combobox.current(0)
 
+        self.create_table()
+        
     # Create field for amout in
     def create_form_entry(self, label, variable):
         form_field_container = ttk.Frame(self)
@@ -79,32 +118,73 @@ class Currency_Exchange(ttk.Frame):
     # Create button
     def create_buttonbox(self):
         button_container = ttk.Frame(self)
-        button_container.pack(fill=X, expand=YES, pady=5)
+        button_container.pack(fill=X, expand=YES, pady=(15, 10))
+
         
         calculate_btn = ttk.Button(
             master=button_container,
             text="Calculate",
-            command=self.on_submit,
+            command=self.calculate,
             bootstyle=SUCCESS,
             width=6
         )
 
-        submit_btn.pack(pady=5)
+        calculate_btn.pack(side=LEFT, padx=5)
         
                 
 
     # action when user clicks calculate button
-    def on_calculate(self):
+    def calculate(self):
         amount_in = self.amount_in.get()
+        sell_buy = self.sell_buy.get()
+        rate = nbp_request(currency)
+
+        if sell_buy == "Buy":
+            rate *= 0.99
+        if sell_buy == "Sell":
+            rate *= 1.01
+        final_amount = amount_in * sell_buy 
+  
         
-        #________________________tutaj ma mnożyć rate * amount * buy
 
+
+    # Create field for calculated amount
+
+
+    #create table
     def create_table(self):
-        return
+        rate_df = get_table()
 
+        columns = [
+            {"text": "Currency Code", "stretch": False},
+            {"text": "Rate", "stretch": False},
+            {"text": "Buy Rate", "stretch": False},
+            {"text": "Sell Rate", "stretch": False},
+        ]
 
+        row_data = [
+            {"Currency Code": row["code"],
+                "Rate": f"{row['mid']:.4f}",
+                "Buy Rate": f"{row['Buy']:.4f}",
+                "Sell Rate": f"{row['Sell']:.4f}",
+            }
+            for _, row in rate_df.iterrows() #why_?
+        ]
 
+        table = Tableview(
+            master=self, #why self?
+            coldata=columns,
+            rowdata=row_data,
+            paginated=True,
+            autofit=False,
+            searchable=True,
+            bootstyle=PRIMARY,
+            
+        )
+            
+        table.pack(fill=BOTH, expand=NO, padx=10, pady=10)    
 
+        
 
 if __name__== "__main__":
     app = ttk.Window("Currency Exchange", "minty", resizable=(True, True))
