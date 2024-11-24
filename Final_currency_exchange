@@ -1,5 +1,6 @@
 rrencypip install --upgrade ttkbootstrap
 
+import numpy as np
 import pandas as pd
 import requests
 import tkinter as tk
@@ -8,72 +9,71 @@ from ttkbootstrap.constants import *
 from ttkbootstrap.toast import ToastNotification
 from ttkbootstrap.tableview import Tableview
 
+
 # Getting Currency Code
 def get_code():
     api_base_address = 'https://api.nbp.pl/api/exchangerates/tables/a/'
-      
+
     response = requests.get(api_base_address)
 
     response_json = response.json()
-    
-    
-    rate_df =  pd.json_normalize(response_json, "rates")
+
+    rate_df = pd.json_normalize(response_json, "rates")
     df = rate_df["code"]
     return df.tolist()
+
 
 # Getting rate
 def nbp_request(currency):
     api_base_address = 'https://api.nbp.pl/api/exchangerates/rates/a/'
-    
+
     response_format = "json"
-    
+
     api_request = api_base_address + currency + "/?format=" + response_format
-    
+
     response = requests.get(api_request)
 
     response_json = response.json()
 
- 
     response_df = pd.DataFrame(response_json)
 
-    response_rate_series = response_df.loc[:,"rates"] 
+    response_rate_series = response_df.loc[:, "rates"]
 
     response_rate_dict = response_rate_series[0]
 
     rate = float(response_rate_dict["mid"])
-   
+
     return rate
+
 
 def get_table():
     api_base_address = 'https://api.nbp.pl/api/exchangerates/tables/a/'
-      
+
     response = requests.get(api_base_address)
 
     response_json = response.json()
-    
-    
-    rate_df =  pd.json_normalize(response_json, "rates")
-    rate_df["Buy"] = rate_df["mid"]*0.99
-    rate_df["Sell"] = rate_df["mid"]*1.01
+
+    rate_df = pd.json_normalize(response_json, "rates")
+    rate_df["Buy"] = rate_df["mid"] * 0.995
+    rate_df["Sell"] = rate_df["mid"] * 1.005
+
     return rate_df
 
-    
 
 class Currency_Exchange(ttk.Frame):
     def __init__(self, master_window):
-        super().__init__(master_window, padding=(20,10))
+        super().__init__(master_window, padding=(20, 10))
         self.pack(fill=BOTH, expand=YES)
-        self.amount_in = ttk.StringVar(value="") 
-        self.currency = ttk.StringVar(value="") 
+        self.amount_in = ttk.StringVar(value="")
+        self.currency = ttk.StringVar(value="")
         self.sell_buy = ttk.StringVar(value="")
+        self.final_amount = ttk.StringVar(value="0.00")
         
-
         instruction_text = "Please type in amount you want to exchange and choose currency from the dropdown menu"
         instruction = ttk.Label(self, text=instruction_text, width=50)
         instruction.pack(fill=X, pady=10)
 
-        self.create_form_entry("Amount in: ", self.amount_in)
-        
+        self.entry_form = self.create_form_entry("Amount in: ", self.amount_in)
 
         currency_list = get_code()
 
@@ -86,9 +86,8 @@ class Currency_Exchange(ttk.Frame):
             state="readonly",
         )
         self.currency_combobox.pack(pady=5)
-        self.currency_combobox.current(0)  
+        self.currency_combobox.current(0)
 
-        
         sell_buy_label = ttk.Label(self, text="Select Operation:")
         sell_buy_label.pack(pady=5)
         self.sell_buy_combobox = ttk.Combobox(
@@ -99,10 +98,14 @@ class Currency_Exchange(ttk.Frame):
         )
         self.sell_buy_combobox.pack(pady=5)
         self.sell_buy_combobox.current(0)
-
+        
+        self.create_buttonbox()
+        self.create_display_field()
         self.create_table()
         
-    # Create field for amout in
+    
+
+    # Create field for amount in
     def create_form_entry(self, label, variable):
         form_field_container = ttk.Frame(self)
         form_field_container.pack(fill=X, expand=True, pady=5)
@@ -110,83 +113,93 @@ class Currency_Exchange(ttk.Frame):
         form_field_label = ttk.Label(self, text=label, width=15)
         form_field_label.pack(pady=5)
 
-        form_input = ttk.Entry(master=form_field_container, textvariable=variable)
-        form_field_label.pack(pady=5)
+        form_input = ttk.Entry(self, textvariable=variable)
+        form_input.pack(pady=5)
 
         return form_input
-    
+
     # Create button
     def create_buttonbox(self):
         button_container = ttk.Frame(self)
         button_container.pack(fill=X, expand=YES, pady=(15, 10))
 
-        
         calculate_btn = ttk.Button(
             master=button_container,
             text="Calculate",
             command=self.calculate,
             bootstyle=SUCCESS,
-            width=6
+            width=10
         )
 
-        calculate_btn.pack(side=LEFT, padx=5)
-        
-                
+        calculate_btn.pack(pady=5)
 
     # action when user clicks calculate button
     def calculate(self):
-        amount_in = self.amount_in.get()
+        amount_in = float(self.amount_in.get())
         sell_buy = self.sell_buy.get()
+        currency = self.currency.get()
+        
         rate = nbp_request(currency)
 
         if sell_buy == "Buy":
-            rate *= 0.99
-        if sell_buy == "Sell":
-            rate *= 1.01
-        final_amount = amount_in * sell_buy 
-  
+            rate *= 0.995
+            final_amount = amount_in * rate   
+            
+        elif sell_buy == "Sell":
+            rate *= 1.005
+        final_amount = amount_in / rate
+        self.final_amount.set(f"{final_amount:.2f}")
+
+            
+
+# Create field for calculated amount
+    def create_display_field(self):
+        
+
+        final_amount_label = ttk.Label(self, text="Final Amount:", font="-size 12 -weight bold")
+        final_amount_label.pack(pady=10)
+
+        final_amount_container = ttk.Frame(self, padding=(10, 20))  # Padding around the container
+        final_amount_container.pack(fill=X, pady=10)
+
+        # Value display for Final Amount
+        final_amount_value = ttk.Label(self, textvariable=self.final_amount, font="-size 12")
+        final_amount_value.pack(pady=20, padx=10)
+
         
 
 
-    # Create field for calculated amount
-
-
-    #create table
+    # create table
     def create_table(self):
         rate_df = get_table()
-
+        rate_df = rate_df.round(4) # zaokraglenie do 4 liczb w data frame
         columns = [
+            {"text": "Currency", "stretch": False},
             {"text": "Currency Code", "stretch": False},
             {"text": "Rate", "stretch": False},
             {"text": "Buy Rate", "stretch": False},
             {"text": "Sell Rate", "stretch": False},
         ]
 
-        row_data = [
-            {"Currency Code": row["code"],
-                "Rate": f"{row['mid']:.4f}",
-                "Buy Rate": f"{row['Buy']:.4f}",
-                "Sell Rate": f"{row['Sell']:.4f}",
-            }
-            for _, row in rate_df.iterrows()      #why_ a nie index?
-        ]
+        rate_list = rate_df.values.tolist() # TableView przyjmuje rows w postaci list. Tworzymy liste z rows z Data Frame.
+
+   
 
         table = Tableview(
-            master=self,            #why self a nie Currency_exchange?
+            master=self,  # why self a nie Currency_exchange?
             coldata=columns,
-            rowdata=row_data,
+            rowdata=rate_list,
             paginated=True,
             autofit=False,
             searchable=True,
             bootstyle=PRIMARY,
-            
+
         )
-            
-        table.pack(fill=BOTH, expand=NO, padx=10, pady=10)    
+     #   table.build_table_data(columns,rate_list)
+        table.pack(fill=BOTH, expand=NO, padx=10, pady=10)
 
-        
 
-if __name__== "__main__":
+if __name__ == "__main__":
     app = ttk.Window("Currency Exchange", "minty", resizable=(True, True))
     Currency_Exchange(app)
     app.mainloop()
