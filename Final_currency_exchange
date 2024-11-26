@@ -193,7 +193,7 @@ class Currency_Exchange(ttk.Frame):
             bootstyle=PRIMARY,
 
         )
-     #   table.build_table_data(columns,rate_list)
+  
         table.pack(fill=BOTH, expand=NO, padx=10, pady=10)
 
 
