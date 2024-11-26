@@ -1,12 +1,10 @@
 rrencypip install --upgrade ttkbootstrap
 
-import numpy as np
 import pandas as pd
 import requests
 import tkinter as tk
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
-from ttkbootstrap.toast import ToastNotification
 from ttkbootstrap.tableview import Tableview
 
 
@@ -162,7 +160,7 @@ class Currency_Exchange(ttk.Frame):
         final_amount_container = ttk.Frame(self, padding=(10, 20))  # Padding around the container
         final_amount_container.pack(fill=X, pady=10)
 
-        # Value display for Final Amount
+        
         final_amount_value = ttk.Label(self, textvariable=self.final_amount, font="-size 12")
         final_amount_value.pack(pady=20, padx=10)
 
@@ -186,7 +184,7 @@ class Currency_Exchange(ttk.Frame):
    
 
         table = Tableview(
-            master=self,  # why self a nie Currency_exchange?
+            master=self,  
             coldata=columns,
             rowdata=rate_list,
             paginated=True,
