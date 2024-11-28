@@ -1,10 +1,9 @@
-import numpy as np
+
 import pandas as pd
 import requests
 import tkinter as tk
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
-from ttkbootstrap.toast import ToastNotification
 from ttkbootstrap.tableview import Tableview
 
 
@@ -170,7 +169,7 @@ class Currency_Exchange(ttk.Frame):
     # create table
     def create_table(self):
         rate_df = get_table()
-        rate_df = rate_df.round(4) # zaokraglenie do 4 liczb w data frame
+        rate_df = rate_df.round(4) 
         columns = [
             {"text": "Currency", "stretch": False},
             {"text": "Currency Code", "stretch": False},
@@ -184,7 +183,7 @@ class Currency_Exchange(ttk.Frame):
    
 
         table = Tableview(
-            master=self,  # why self a nie Currency_exchange?
+            master=self,  
             coldata=columns,
             rowdata=rate_list,
             paginated=True,
